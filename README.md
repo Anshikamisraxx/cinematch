@@ -2,7 +2,8 @@
 
 A content-based movie recommendation web app. Pick a movie you like and get 5 similar ones — with posters — across both Hollywood and Bollywood.
 
-**Live demo:** _coming soon_
+**Live demo:** https://cinematch-anshika.streamlit.app
+
 
 ## How it works
 Each movie is turned into a "fingerprint" from its genres, keywords, top cast, director, and story summary. That text is vectorized with `CountVectorizer` and movies are compared using cosine similarity. The 5 closest are recommended.
