@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="CineMatch", page_icon="🎬", layout="wide")
+
 st.title("🎬 CineMatch")
 st.write("Pick a movie you like, and I'll suggest 5 similar ones — Hollywood & Bollywood.")
 
@@ -19,6 +20,7 @@ def load():
     return movies, similarity
 
 movies, similarity = load()
+st.caption(f"Searching across {len(movies):,} movies 🍿")
 
 @st.cache_data
 def fetch_poster(movie_id):
@@ -43,9 +45,10 @@ def recommend(title):
 
 selected = st.selectbox("Choose a movie:", movies["title"].values)
 
-if st.button("Recommend"):
+if st.button("Recommend", type="primary"):
+    with st.spinner("Finding movies you'll love..."):
+        recs = recommend(selected)
     st.subheader("You might also like:")
-    recs = recommend(selected)
     cols = st.columns(5)
     for col, (name, movie_id) in zip(cols, recs):
         with col:
@@ -53,3 +56,14 @@ if st.button("Recommend"):
             if poster:
                 st.image(poster, width="stretch")
             st.caption(name)
+
+with st.expander("ℹ️ How does CineMatch work?"):
+    st.write(
+        "Each movie is turned into a 'fingerprint' from its genres, keywords, top cast, "
+        "director, and story summary. Those are converted into numbers and compared using "
+        "cosine similarity — the 5 closest movies become your recommendations, across both "
+        "Hollywood and Bollywood."
+    )
+
+st.markdown("---")
+st.caption("Built by Anshika Misra · Data & posters from TMDB")
