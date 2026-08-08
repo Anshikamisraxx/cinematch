@@ -15,15 +15,14 @@ st.write("Pick a movie you like, and I'll suggest 5 similar ones — Hollywood, 
 
 API_KEY = st.secrets["TMDB_API_KEY"]
 
-@st.cache_data
+@st.cache_resource
 def load():
     movies = pickle.load(open("movies.pkl", "rb"))
     cv = CountVectorizer(max_features=5000, stop_words="english")
-    vectors = cv.fit_transform(movies["tags"]).toarray()
-    similarity = cosine_similarity(vectors)
-    return movies, similarity
+    vectors = cv.fit_transform(movies["tags"])   # keep sparse — uses very little memory
+    return movies, vectors
 
-movies, similarity = load()
+movies, vectors = load()
 st.caption(f"Searching across {len(movies):,} movies 🍿")
 
 @st.cache_data
@@ -43,10 +42,12 @@ def rating_label(v):
 
 def recommend(title):
     index = movies[movies["title"] == title].index[0]
-    distances = sorted(list(enumerate(similarity[index])), key=lambda x: x[1], reverse=True)
+    # similarity of just the picked movie against all movies (1 row, not a full grid)
+    sims = cosine_similarity(vectors[index], vectors).flatten()
+    order = sims.argsort()[::-1]
     results = []
-    for i in distances[1:6]:
-        row = movies.iloc[i[0]]
+    for i in order[1:6]:
+        row = movies.iloc[int(i)]
         results.append((row["title"], row["movie_id"], row["vote_average"]))
     return results
 
